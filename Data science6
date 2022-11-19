@@ -1,0 +1,52 @@
+import warnings
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy import stats as stat
+warnings.filterwarnings('ignore')
+import scipy.cluster.hierarchy as sch
+from sklearn.cluster import KMeans
+
+df = pd.read_csv('wine.csv')
+print(df.head())
+print(df.info)
+
+RSEED=8123
+
+features = df
+
+#Q1
+# normalize X train
+features_z = features
+features_z = features_z.apply(stat.zscore)
+
+model = sch.linkage(features_z, method='complete')
+
+clusters = sch.fcluster(model, t=9 ,criterion='distance')
+print("the clusters are:",clusters)
+
+
+#Q2
+kmeans= KMeans(n_clusters=3, random_state=RSEED)
+kmeans.fit(features_z)
+
+
+#Q4
+print("the centers are:",kmeans.cluster_centers_)
+print("-------------------------------------")
+#Q5
+features['cluster']= kmeans.labels_
+print(features.head())
+print("-------------------------------------")
+#Q6
+unNur=features.groupby(features.cluster).mean()
+print(unNur)
+print(unNur.Magnesium)
+nur=features_z.groupby(features.cluster).mean()
+print(nur)
+# the magnesium level is the highest at cluster 0
+
+#Q8
+dendogram = sch.dendrogram(model)
+plt.show()
+
+
