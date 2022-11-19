@@ -1,0 +1,54 @@
+import pandas as pd
+from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+from sklearn.linear_model import LogisticRegression
+
+df = pd.read_csv("memmographic_massesHW4.csv ")
+
+RSEED=8123
+# getting to know the data
+print(df.isnull().sum())
+print(df.head())
+print(df.shape)
+# check for problematic values
+plt.hist(df.Age ,bins=10)
+plt.show()
+
+plt.boxplot(df.Age)
+plt.show()
+
+plt.boxplot(df.Shape)
+plt.show()
+
+plt.boxplot(df.Margin)
+plt.show()
+
+plt.boxplot(df.Density)
+plt.show()
+
+#Q2
+X = df.drop('Severity', axis=1)
+y = df['Severity']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=RSEED)
+
+#Q3
+clf= LogisticRegression(random_state=RSEED)
+
+clf.fit(X_train,y_train)
+
+#Q4
+#predict test
+y_pred_test =clf.predict(X_test)
+print("for test prediction: ")
+print("Accuracy:", metrics.accuracy_score(y_test, y_pred_test))
+print("Precision:", metrics.precision_score(y_test, y_pred_test))
+print("recall:", metrics.recall_score(y_test, y_pred_test))
+print("---------------------------------------")
+#predict train
+y_pred_train =clf.predict(X_train)
+print("for train prediction: ")
+print("Accuracy:", metrics.accuracy_score(y_train, y_pred_train))
+print("Precision:", metrics.precision_score(y_train, y_pred_train))
+print("recall:", metrics.recall_score(y_train, y_pred_train))
+print("---------------------------------------")
