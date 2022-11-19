@@ -1,0 +1,83 @@
+import numpy as np
+import pandas as pd
+from scipy.stats import zscore
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+from sklearn import linear_model
+from scipy import stats as stat
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+
+RSEED = 8123
+df = pd.read_csv("EnergyEfficiencyHW4.csv")
+
+X = df.drop('Heating Load', axis=1)
+y = df['Heating Load']
+
+# Q1
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=RSEED)
+
+# Q2
+regressor = linear_model.LinearRegression()
+# fit model
+regressor.fit(X_train, y_train)
+y_test_pred = regressor.predict(X_test)
+# Q3
+# Regression model evaluation with RMSE
+print("RMSE for test", mean_squared_error(y_test, y_test_pred, squared=False))
+
+y_train_pred = regressor.predict(X_train)
+print("RMSE for train", mean_squared_error(y_train, y_train_pred, squared=False))
+
+# Q4
+print("Free constant coefficient", regressor.intercept_)
+
+# Q5
+print("coefficient:")
+print(np.column_stack((X_train.columns, regressor.coef_)))
+# Surface Area has the smallest coef
+# We cant know which feature has the highest influence on the prediction
+# since the numbers in the data frame are not in the same scale
+
+# Q6
+
+X = df.drop('Heating Load', axis=1).apply(zscore)
+y = stat.zscore(df['Heating Load'])
+
+
+X_train_z, X_test_z, y_train_z, y_test_z = train_test_split(X, y, test_size=0.2, random_state=RSEED)
+
+regressor2 = linear_model.LinearRegression()
+# fit model
+
+
+regressor2.fit(X_train_z, y_train_z)
+y_test_pred_z = regressor2.predict(X_test_z)
+
+print("RMSE for test", mean_squared_error(y_test_z, y_test_pred_z, squared=False))
+
+y_train_pred_z = regressor2.predict(X_train_z)
+print("RMSE for train", mean_squared_error(y_train_z, y_train_pred_z, squared=False))
+
+print("coefficient for normalize model:")
+print(np.column_stack((X_train_z.columns, regressor.coef_)))
+
+# Q7
+# we can see the 'Roof Area' has the highest coef
+# because we normalized the results we can say this has the most influence on the model
+
+# Q8
+dtree_reg = DecisionTreeRegressor(random_state=RSEED, max_depth=3)
+dtree_reg.fit(X_train_z, y_train_z)
+
+plt.figure()
+plot_tree(dtree_reg, filled=True, feature_names=X.columns)
+plt.show()
+
+y_pred_test = dtree_reg.predict(X_test_z)
+print("Q8 Root Mean Squared Error:", mean_squared_error(y_test_z, y_pred_test, squared=False))
+
+y_pred_train = dtree_reg.predict(X_train_z)
+print("Q8 TRAIN Root Mean Squared Error:", mean_squared_error(y_train_z, y_pred_train, squared=False))
+
+#The tree Regressor is better because we get a smaller RMSE in the test
